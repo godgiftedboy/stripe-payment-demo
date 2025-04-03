@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:stripe_payment_demo/keys.dart';
@@ -12,40 +11,43 @@ class PaymentServices {
 
   PaymentServices._internal();
 
-  Map<String, dynamic>? paymentIntent;
+  Map<String, dynamic>? paymentIntentResponse;
 
   //1
-  paymentSheetInitialization(String amount, String currency) async {
-    paymentIntent = await createPaymentIntent(amount, currency); //2
-    await Stripe.instance
-        .initPaymentSheet(
-      paymentSheetParameters: SetupPaymentSheetParameters(
-        allowsDelayedPaymentMethods: true,
-        paymentIntentClientSecret: paymentIntent!['client_secret'],
-        style: ThemeMode.dark,
-        merchantDisplayName: 'Swo hum Stripe Store Demo',
+  createStripeTokenInitialization(String amount, String currency) async {
+    // Generate token
+    final token = await Stripe.instance.createToken(
+      const CreateTokenParams.card(
+        params: CardTokenParams(),
       ),
-    )
-        .then((value) {
-      print(value);
-    });
-    displayPaymentSheet(); //3
+    );
+    log(token.id);
+    // paymentIntentResponse = await createPaymentIntent(
+    //   amount,
+    //   currency,
+    //   token.id,
+    // ); //2
+
+    //confirm payemnt using the client secret from paymentIntentResponse.
+
+    // confirmPaymentSheet(); //3
   }
 
   //2
-  //create Payment
-  createPaymentIntent(String amount, String currency) async {
+  //create Payment intent
+  createPaymentIntent(String amount, String currency, String tokenid) async {
     try {
       //Request body
       Map<String, dynamic> body = {
         "amount": calculateAmount(amount),
         "currency": currency,
+        "token": tokenid,
         // "payment_method": "card"
       };
 
       //Make post request to Stripe
       final dio = Dio(BaseOptions(
-        baseUrl: "https://api.stripe.com/v1/payment_intents",
+        baseUrl: "backendurl to create a intent",
         headers: {
           'Authorization': 'Bearer $secretKey',
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -63,7 +65,7 @@ class PaymentServices {
         ));
       }
       var response = await dio.post(
-        'https://api.stripe.com/v1/payment_intents',
+        'backendurl to create a intent',
         data: body,
       );
 
@@ -76,11 +78,18 @@ class PaymentServices {
   }
 
   //3
-  displayPaymentSheet() async {
+  confirmPaymentSheet() async {
     try {
       // 3. display the payment sheet.
-      await Stripe.instance.presentPaymentSheet().then((value) {
-        paymentIntent = null;
+      await Stripe.instance
+          .confirmPayment(
+        paymentIntentClientSecret: "client secret provided by backend",
+        // data: const PaymentMethodParams.card(
+        //   paymentMethodData: PaymentMethodData(),
+        // ),
+      )
+          .then((value) {
+        paymentIntentResponse = null;
         print("$value");
       });
 
