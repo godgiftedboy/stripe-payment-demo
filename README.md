@@ -1,16 +1,13 @@
 # stripe_payment_demo
 
-A new Flutter project.
+Sample Flutter project.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+Stripe Payment Integration on Flutter
 
-A few resources to get you started if this is your first Flutter project:
+Here are the common Stripe payment flows based on how the intent is created:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Token Flow – Create a payment token (tok_...) in the frontend and send it to the backend to create a charge. (Deprecated for newer integrations, but still used in some cases)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Payment Intent Flow – The frontend creates a PaymentIntent using Stripe.js or mobile SDK, then confirms it either client-side or server-side.
